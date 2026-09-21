@@ -1,9 +1,6 @@
 import 'dotenv/config';
 import { isPlainObject } from './utils/isPlainObject.js';
-
-const USERS_ENDPOINT = '/api/users';
-const API_KEY_HEADER = 'x-api-key';
-const CONTEXT_DELAY_MS = 1000;
+import { ERRORS, HTTP, ENDPOINTS, LOG_MESSAGES, TEST_DATA } from '../config/constants.js';
 
 /**
  * API client for interacting with ReqRes service.
@@ -11,11 +8,12 @@ const CONTEXT_DELAY_MS = 1000;
 export class ReqResClient {
   /**
    * Initializes client with environment variables.
+   *
    * @throws {Error} If API_BASE_URL is not set.
    */
   constructor() {
     if (!process.env.API_BASE_URL) {
-      throw new Error('API_BASE_URL is not defined');
+      throw new Error(ERRORS.MISSING_BASE_URL);
     }
 
     this.baseUrl = process.env.API_BASE_URL;
@@ -24,6 +22,7 @@ export class ReqResClient {
 
   /**
    * Sends an HTTP request and parses JSON response.
+   *
    * @param {string} endpoint - Target endpoint path.
    * @param {object} [options={}] - Request options.
    * @returns {Promise<object>} Parsed JSON response.
@@ -33,7 +32,7 @@ export class ReqResClient {
     const url = new URL(endpoint, this.baseUrl);
 
     const headers = {
-      ...(this.apiKey ? { [API_KEY_HEADER]: this.apiKey } : {}),
+      ...(this.apiKey ? { [HTTP.HEADERS.API_KEY]: this.apiKey } : {}),
       ...(options.headers ?? {}),
     };
 
@@ -43,40 +42,45 @@ export class ReqResClient {
     });
 
     if (!response.ok) {
-      const err = new Error(`HTTP ${response.status}`);
+      const err = new Error(`${ERRORS.HTTP_ERROR_PREFIX} ${response.status}`);
       err.status = response.status;
       throw err;
     }
+
     return response.json();
   }
 
   /**
    * Fetches user data by ID.
+   *
    * @param {number} id - User ID.
    * @returns {Promise<object>} User details.
    * @throws {TypeError} If ID is not a positive integer.
    */
   async getUser(id) {
     if (!Number.isInteger(id) || id <= 0) {
-      throw new TypeError('User id must be a positive integer number');
+      throw new TypeError(ERRORS.INVALID_USER_ID);
     }
-    return this._request(`${USERS_ENDPOINT}/${id}`);
+
+    return this._request(`${ENDPOINTS.USERS}/${id}`);
   }
 
   /**
    * Creates a new user.
+   *
    * @param {object} userData - User payload object.
    * @returns {Promise<object>} Created user response.
    * @throws {TypeError} If userData is not an object.
    */
   async createUser(userData) {
     if (!isPlainObject(userData)) {
-      throw new TypeError('userData must be a plain object');
+      throw new TypeError(ERRORS.INVALID_USER_DATA);
     }
-    return this._request(USERS_ENDPOINT, {
-      method: 'POST',
+
+    return this._request(ENDPOINTS.USERS, {
+      method: HTTP.METHODS.POST,
       headers: {
-        'Content-Type': 'application/json',
+        [HTTP.HEADERS.CONTENT_TYPE]: HTTP.CONTENT_TYPES.JSON,
       },
       body: JSON.stringify(userData),
     });
@@ -84,13 +88,13 @@ export class ReqResClient {
 
   /**
    * Demonstrates how arrow function preserves lexical 'this'.
+   *
    * @returns {void}
    */
   testContext() {
-    // Arrow function captures 'this' from ReqResClient instance, so this.baseUrl is accessible here.
     setTimeout(() => {
       // eslint-disable-next-line no-console
-      console.log('Base URL:', this.baseUrl);
-    }, CONTEXT_DELAY_MS);
+      console.log(LOG_MESSAGES.BASE_URL, this.baseUrl);
+    }, TEST_DATA.CONTEXT_DELAY_MS);
   }
 }

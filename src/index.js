@@ -2,24 +2,16 @@ import 'dotenv/config';
 import assert from 'node:assert';
 import { ReqResClient } from './ReqResClient.js';
 import { withLogging } from './tasks.js';
-
-const LOG_THRESHOLD_MS = 500;
-const USER_IDS = [1, 2, 3];
-const EXPECTED_USERS_COUNT = USER_IDS.length;
-const EXPECTED_USER_EMAILS = [
-  'george.bluth@reqres.in',
-  'janet.weaver@reqres.in',
-  'emma.wong@reqres.in',
-];
+import { ERRORS, TEST_DATA } from '../config/constants.js';
 
 const reqResClient = new ReqResClient();
 
-const loggedGetUser = withLogging((id) => reqResClient.getUser(id), LOG_THRESHOLD_MS);
+const loggedGetUser = withLogging((id) => reqResClient.getUser(id), TEST_DATA.LOG_THRESHOLD_MS);
 
-const usersData = await Promise.all(USER_IDS.map((userId) => loggedGetUser(userId)));
+const usersData = await Promise.all(TEST_DATA.USER_IDS.map((userId) => loggedGetUser(userId)));
 
 const usersEmails = usersData.map((userData) => userData?.data?.email);
 
-assert.ok(Array.isArray(usersEmails), 'usersEmails must be an Array');
-assert.strictEqual(usersEmails.length, EXPECTED_USERS_COUNT, 'Emails count must match users count');
-assert.deepStrictEqual(usersEmails, EXPECTED_USER_EMAILS, 'Users emails must match expected ones');
+assert.ok(Array.isArray(usersEmails), ERRORS.EMAILS_NOT_ARRAY);
+assert.strictEqual(usersEmails.length, TEST_DATA.USER_IDS.length, ERRORS.EMAILS_COUNT_MISMATCH);
+assert.deepStrictEqual(usersEmails, TEST_DATA.EXPECTED_USER_EMAILS, ERRORS.EMAILS_DATA_MISMATCH);
