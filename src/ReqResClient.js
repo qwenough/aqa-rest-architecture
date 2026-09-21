@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { isPlainObject } from './utils/isPlainObject.js';
 
 const USERS_ENDPOINT = '/api/users';
 const API_KEY_HEADER = 'x-api-key';
@@ -32,7 +33,7 @@ export class ReqResClient {
     const url = new URL(endpoint, this.baseUrl);
 
     const headers = {
-      [API_KEY_HEADER]: this.apiKey,
+      ...(this.apiKey ? { [API_KEY_HEADER]: this.apiKey } : {}),
       ...(options.headers ?? {}),
     };
 
@@ -69,7 +70,7 @@ export class ReqResClient {
    * @throws {TypeError} If userData is not an object.
    */
   async createUser(userData) {
-    if (!userData || typeof userData !== 'object' || Array.isArray(userData)) {
+    if (!isPlainObject(userData)) {
       throw new TypeError('userData must be a plain object');
     }
     return this._request(USERS_ENDPOINT, {
