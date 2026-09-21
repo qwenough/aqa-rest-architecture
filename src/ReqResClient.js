@@ -38,6 +38,7 @@ export class ReqResClient {
 
     const url = new URL(endpoint, this.baseUrl);
 
+    //Send x-api-key only if set to avoid sending an empty header
     const headers = {
       ...(this.apiKey ? { [HTTP.HEADERS.API_KEY]: this.apiKey } : {}),
       ...(safeOptions.headers ?? {}),
@@ -103,6 +104,16 @@ export class ReqResClient {
    * @returns {void}
    */
   testContext() {
+    // Step 1: Regular function loses 'this' inside setTimeout.
+    // setTimeout(function () {
+    //   console.log(this.baseUrl);
+    // }, TEST_DATA.CONTEXT_DELAY_MS);
+
+    // Step 2: Extracting a method to a variable loses 'this' when called alone.
+    // const fn = this.getUser;
+    // fn(1);
+
+    // Step 3: Arrow function keeps 'this' from the class instance.
     setTimeout(() => {
       // eslint-disable-next-line no-console
       console.log(LOG_MESSAGES.BASE_URL, this.baseUrl);
