@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { isPlainObject } from './utils/isPlainObject.js';
-import { ERRORS, HTTP, ENDPOINTS, LOG_MESSAGES, TEST_DATA } from '../config/constants.js';
+import { ERRORS, HTTP, ENDPOINTS, LOG_MESSAGES } from '../config/constants.js';
+import { TEST_DATA } from '../config/testData.js';
 
 /**
  * API client for interacting with ReqRes service.
@@ -29,15 +30,21 @@ export class ReqResClient {
    * @throws {Error} If HTTP response is not ok.
    */
   async _request(endpoint, options = {}) {
+    if (typeof endpoint !== 'string' || endpoint.trim() === '') {
+      throw new TypeError(ERRORS.INVALID_ENDPOINT);
+    }
+
+    const safeOptions = options ?? {};
+
     const url = new URL(endpoint, this.baseUrl);
 
     const headers = {
       ...(this.apiKey ? { [HTTP.HEADERS.API_KEY]: this.apiKey } : {}),
-      ...(options.headers ?? {}),
+      ...(safeOptions.headers ?? {}),
     };
 
     const response = await fetch(url, {
-      ...options,
+      ...safeOptions,
       headers,
     });
 
@@ -70,11 +77,15 @@ export class ReqResClient {
    *
    * @param {object} userData - User payload object.
    * @returns {Promise<object>} Created user response.
-   * @throws {TypeError} If userData is not an object.
+   * @throws {TypeError} If userData is not a plain object or is empty
    */
   async createUser(userData) {
     if (!isPlainObject(userData)) {
       throw new TypeError(ERRORS.INVALID_USER_DATA);
+    }
+
+    if (Object.keys(userData).length === 0) {
+      throw new TypeError(ERRORS.EMPTY_USER_DATA);
     }
 
     return this._request(ENDPOINTS.USERS, {

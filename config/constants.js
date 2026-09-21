@@ -8,6 +8,8 @@ export const ERRORS = {
   EMAILS_NOT_ARRAY: 'usersEmails must be an Array',
   EMAILS_COUNT_MISMATCH: 'Emails count must match users count',
   EMAILS_DATA_MISMATCH: 'Users emails must match expected ones',
+  INVALID_ENDPOINT: 'Endpoint must be a non-empty string',
+  EMPTY_USER_DATA: 'User data cannot be an empty object',
 };
 
 export const HTTP = {

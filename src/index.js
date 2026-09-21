@@ -2,7 +2,8 @@ import 'dotenv/config';
 import assert from 'node:assert';
 import { ReqResClient } from './ReqResClient.js';
 import { withLogging } from './tasks.js';
-import { ERRORS, TEST_DATA } from '../config/constants.js';
+import { ERRORS } from '../config/constants.js';
+import { TEST_DATA } from '../config/testData.js';
 
 const reqResClient = new ReqResClient();
 
